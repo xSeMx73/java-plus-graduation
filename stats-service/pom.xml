@@ -8,10 +8,8 @@
     </parent>
 
     <artifactId>stats-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-
-    <name>stats-service</name>
-    <url>https://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

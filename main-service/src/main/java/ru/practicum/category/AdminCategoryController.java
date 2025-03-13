@@ -9,6 +9,7 @@ import ru.practicum.category.dto.CategoryCreateDto;
 import ru.practicum.category.dto.CategoryResponseDto;
 import ru.practicum.category.dto.CategoryUpdateDto;
 
+
 @Slf4j
 @Validated
 @RequiredArgsConstructor
@@ -24,7 +25,9 @@ public class AdminCategoryController {
         log.info("==> Create category {} start", createDto);
         CategoryResponseDto created = categoryService.create(createDto);
         log.info("<== Created category {} end", created);
+
         return created;
+
     }
 
     @PatchMapping("/{categoryId}")

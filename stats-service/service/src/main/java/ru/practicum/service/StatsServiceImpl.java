@@ -1,6 +1,6 @@
 package ru.practicum.service;
 
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
 import ru.practicum.StatDto;
@@ -10,11 +10,15 @@ import ru.practicum.repository.StatsRepository;
 
 import java.util.List;
 
-@RequiredArgsConstructor
+
 @Service
 public class StatsServiceImpl implements StatsService {
+    public StatsServiceImpl(StatsRepository statsRepository, HitMapper hitMapper) {
+        this.statsRepository = statsRepository;
+        this.hitMapper = hitMapper;
+    }
 
-   private final StatsRepository statsRepository;
+    private final StatsRepository statsRepository;
    private final HitMapper hitMapper;
 
     @Override

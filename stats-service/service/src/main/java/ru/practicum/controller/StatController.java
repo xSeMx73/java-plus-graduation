@@ -1,6 +1,5 @@
 package ru.practicum.controller;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -19,15 +18,19 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor
+
 @RequestMapping
 public class StatController {
+
+    public StatController(StatsService statsService) {
+        this.statsService = statsService;
+    }
 
     private final StatsService statsService;
 
     @PostMapping("/hit")
     public ResponseEntity<HitDto> hit(@RequestBody HitDto hitDto) {
-        log.info("Новая запись в сервисе статистики {}", hitDto);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(statsService.hit(hitDto));
     }
 
@@ -37,7 +40,7 @@ public class StatController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
-        log.info("Запрос статистики");
+
         if (start.isAfter(end)) {
             throw new ValidationException("Неверные параметры запроса");
         }
@@ -47,7 +50,7 @@ public class StatController {
 
     @GetMapping("/stats/event")
     public Long getEventViews(@RequestParam String uri) {
-        log.info("Запрос количества просмотров события {}", uri);
+
         return statsService.getEventViews(uri);
     }
 }

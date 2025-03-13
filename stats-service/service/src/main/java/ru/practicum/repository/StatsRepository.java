@@ -30,6 +30,6 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
             "ORDER BY count(h.ip) DESC")
     List<StatDto> getWithIpCount(LocalDateTime start, LocalDateTime end, List<String> uris);
 
-    @Query(value = "SELECT COUNT(DISTINCT ip) FROM hits WHERE uri = (:uri)", nativeQuery = true)
+    @Query(value = "SELECT COUNT(DISTINCT h.ip) FROM Hit as h WHERE h.uri = (:uri)")
     Long viewsCount(String uri);
 }

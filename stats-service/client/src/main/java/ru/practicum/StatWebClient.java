@@ -1,5 +1,7 @@
 package ru.practicum;
 
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.time.format.DateTimeFormatter;
 
 
+@Slf4j
 @Component
 public class StatWebClient {
     private final WebClient webClient;
@@ -23,6 +26,8 @@ public class StatWebClient {
     }
 
     public HitDto addHit(HitDto hitDto) {
+
+
         return webClient
                 .post()
                 .uri("/hit")
@@ -40,17 +45,17 @@ public class StatWebClient {
                 .block();
     }
 
-    public Mono<StatDto> get(StatRequestDto request) {
+    public Mono<StatDto> get(StatRequestDto statRequestDto) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:9090/stats");
 
-        uriBuilder.queryParam("start", request.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        uriBuilder.queryParam("end", request.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        if (request.getUri() != null) {
-            for (String uri : request.getUri()) {
+        uriBuilder.queryParam("start", statRequestDto.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        uriBuilder.queryParam("end", statRequestDto.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        if (statRequestDto.getUri() != null) {
+            for (String uri : statRequestDto.getUri()) {
                 uriBuilder.queryParam("uris", uri);
             }
         }
-        uriBuilder.queryParam("unique", request.getUnique());
+        uriBuilder.queryParam("unique", statRequestDto.getUnique());
         return webClient
                 .get()
                 .uri(uriBuilder.build().toUri())
