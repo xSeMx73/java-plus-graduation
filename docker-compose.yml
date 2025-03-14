@@ -9,7 +9,7 @@ services:
     healthcheck:
       test: "curl --fail --silent discovery-server:8761/actuator/health | grep UP || exit 1"
       timeout: 5s
-      interval: 20s
+      interval: 10s
       retries: 5
 
   config-server:
