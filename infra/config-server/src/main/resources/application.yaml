@@ -13,16 +13,12 @@ spring:
             - classpath:config/core/{application}
             - classpath:config/infra/{application}
             - classpath:config/stats-service/{application}
-    discovery:
-      enabled: true
+
 
 eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-
   instance:
-    preferIpAddress: true
-    hostname: localhost
-    instance-id: "${spring.application.name}:${random.value}"
-    leaseRenewalIntervalInSeconds: 10
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true

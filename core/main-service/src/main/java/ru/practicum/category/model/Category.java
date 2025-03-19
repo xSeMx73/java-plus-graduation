@@ -13,13 +13,20 @@ import java.util.Objects;
 @Entity
 @Table(name = "categories")
 @ToString
-@Getter
 @Setter
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public String getName() {
+        return name;
+    }
+
+    public Long getId() {
+        return id;
+    }
 
     @NotBlank
     @Size(max = 50)

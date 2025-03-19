@@ -10,7 +10,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import java.time.format.DateTimeFormatter;
 
 
 @Slf4j
@@ -45,7 +44,7 @@ public class StatWebClient {
                 .block();
     }
 
-    public Mono<StatDto> get(StatRequestDto statRequestDto) {
+ /*   public Mono<StatDto> get(StatRequestDto statRequestDto) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:9090/stats");
 
         uriBuilder.queryParam("start", statRequestDto.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -63,7 +62,7 @@ public class StatWebClient {
                 .bodyToMono(StatDto.class);
 
     }
-
+*/
     public Long getEventViews(String request) {
       UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://stats-server:9090/stats/event");
                 uriBuilder.queryParam("uri", request);

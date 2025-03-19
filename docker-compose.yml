@@ -9,7 +9,7 @@ services:
     healthcheck:
       test: "curl --fail --silent discovery-server:8761/actuator/health | grep UP || exit 1"
       timeout: 5s
-      interval: 10s
+      interval: 20s
       retries: 5
 
   config-server:
@@ -45,7 +45,7 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
 
   stats-server:
-    build: stats-service/service
+    build: stats-service\service
     container_name: ewm-stats-server
     ports:
       - "9090:9090"
@@ -77,6 +77,8 @@ services:
       - POSTGRES_DB=ewm-stats
     networks:
       - ewm-net
+    volumes:
+      - stats_data:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -116,6 +118,8 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_USER=root
       - POSTGRES_DB=ewm-main
+    volumes:
+      - ewm_data:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -124,3 +128,7 @@ services:
 
 networks:
   ewm-net:
+
+volumes:
+  stats_data:
+  ewm_data:

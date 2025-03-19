@@ -1,5 +1,7 @@
 package ru.practicum.category;
 
+
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,12 +12,18 @@ import ru.practicum.category.dto.CategoryResponseDto;
 import ru.practicum.category.dto.CategoryUpdateDto;
 
 
+
+
 @Slf4j
 @Validated
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/admin/categories")
 public class AdminCategoryController {
+
+
+
+
 
     private final CategoryService categoryService;
 
