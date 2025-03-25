@@ -1,5 +1,6 @@
 server:
   port: 0
+
 spring:
   application:
     name: config-server
@@ -13,12 +14,10 @@ spring:
             - classpath:config/core/{application}
             - classpath:config/infra/{application}
             - classpath:config/stats-service/{application}
-
+      discovery:
+        enabled: true
 
 eureka:
-  instance:
-    prefer-ip-address: true
   client:
-    service-url:
+    serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true

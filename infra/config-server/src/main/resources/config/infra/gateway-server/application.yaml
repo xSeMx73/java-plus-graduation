@@ -1,24 +1,14 @@
+server:
+  port: 8080
+
 spring:
+  application:
+    name: gateway-server
   cloud:
     gateway:
       discovery.locator.enabled: true
       routes:
-        - id: main-service
-          uri: lb://core
+        - id: main_service_route
+          uri: lb://main-service
           predicates:
             - Path=/**
-
-        - id: service
-          uri: lb://stats-server
-          predicates:
-            - Path=/**
-
-server:
-  port: 8080
-
-eureka:
-    client:
-      serviceUrl:
-        defaultZone: http://localhost:8761/eureka/
-    instance:
-      prefer-ip-address: true

@@ -16,9 +16,9 @@
     </properties>
 
     <modules>
-        <module>client</module>
-        <module>service</module>
-        <module>dto</module>
+        <module>stats-client</module>
+        <module>stats-server</module>
+        <module>stats-dto</module>
     </modules>
 
 </project>

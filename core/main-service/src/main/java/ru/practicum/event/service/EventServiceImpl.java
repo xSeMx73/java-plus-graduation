@@ -4,6 +4,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -133,6 +135,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие c ID: " + id + " не найдено");
         }
         hit(request.getRemoteAddr(),request.getRequestURI());
+
 
         Long views = statisticService.getEventViews(request.getRequestURI());
         if (views != null) {
