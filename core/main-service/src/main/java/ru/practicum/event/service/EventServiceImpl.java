@@ -22,7 +22,6 @@ import ru.practicum.event.model.Event;
 import ru.practicum.exception.*;
 import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.enums.RequestState;
-import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
@@ -41,14 +40,14 @@ public class EventServiceImpl implements EventService {
     private final EventRepository repository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    @Qualifier("mvcConversionService")
+
+    @Qualifier("conversionService")
     private final ConversionService converter;
     private final EventToEventFullResponseDtoConverter listConverter;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
     private final StatWebClient statisticService;
     private final RequestRepository requestRepository;
-    private final RequestMapper requestMapper;
 
     @Override
     public List<EventFullResponseDto> getEvents(Long userId, Integer from, Integer size) {
@@ -167,7 +166,7 @@ public class EventServiceImpl implements EventService {
         Event event = repository.findById(eventId).orElse(new Event());
         List<Request> requests = requestRepository.findAllByEvent(event);
         if (requests.isEmpty()) return new ArrayList<>();
-        return requests.stream().map(requestMapper::toRequestDto).collect(Collectors.toList());
+        return requests.stream().map(r -> converter.convert(r, RequestDto.class)).collect(Collectors.toList());
     }
 
     @Override
@@ -189,7 +188,7 @@ public class EventServiceImpl implements EventService {
                 confirmedStatus(event, request, confirmedReqs);
             } else {
                 request.setStatus(RequestState.REJECTED);
-                canceledReqs.add(requestMapper.toRequestDto(request));
+                canceledReqs.add(converter.convert(request, RequestDto.class));
                 requestRepository.save(request);
             }
         }
@@ -199,13 +198,13 @@ public class EventServiceImpl implements EventService {
                                        List<RequestDto> confirmedRequests) {
         if (event.getConfirmedRequests() >= event.getParticipantLimit() && event.getParticipantLimit() != 0) {
             request.setStatus(RequestState.CANCELED);
-            confirmedRequests.add(requestMapper.toRequestDto(request));
+            confirmedRequests.add(converter.convert(request, RequestDto.class));
             requestRepository.save(request);
             throw new NotPossibleException("The participant limit is reached");
         }
         request.setStatus(RequestState.CONFIRMED);
         event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-        confirmedRequests.add(requestMapper.toRequestDto(request));
+        confirmedRequests.add(converter.convert(request, RequestDto.class));
         requestRepository.save(request);
     }
 

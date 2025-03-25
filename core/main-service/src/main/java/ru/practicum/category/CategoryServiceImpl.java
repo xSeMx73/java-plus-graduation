@@ -1,6 +1,8 @@
 package ru.practicum.category;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,11 +18,14 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ParameterConflictException;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
-    private final CategoryMapper categoryMapper;
+
+    @Qualifier("conversionService")
+    private final ConversionService converter;
 
     private final CategoryRepository categoryRepository;
 
@@ -31,9 +36,9 @@ public class CategoryServiceImpl implements CategoryService {
         if (categoryRepository.existsByName(createDto.name())) {
             throw new ParameterConflictException("Category", "Категория уже существует");
         }
-        Category category = categoryMapper.toCategory(createDto);
-        Category categoryCreated = categoryRepository.save(category);
-        return categoryMapper.toCategoryDto(categoryCreated);
+        Category category = converter.convert(createDto, Category.class);
+        Category categoryCreated = categoryRepository.save(Objects.requireNonNull(category));
+        return converter.convert(categoryCreated, CategoryResponseDto.class);
     }
 
     @Override
@@ -49,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setName(updateDto.name());
         }
 
-        return categoryMapper.toCategoryDto(category);
+        return converter.convert(category, CategoryResponseDto.class);
     }
 
     @Override
@@ -66,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponseDto getById(long categoryId) {
         Category category = getCategoryIfExist(categoryId);
-        return categoryMapper.toCategoryDto(category);
+        return converter.convert(category, CategoryResponseDto.class);
     }
 
     @Override
@@ -75,7 +80,9 @@ public class CategoryServiceImpl implements CategoryService {
 
         Pageable pageable = PageRequest.of(from, size, sortById);
 
-        return categoryRepository.findAll(pageable).stream().map(categoryMapper::toCategoryDto).toList();
+        return categoryRepository.findAll(pageable).stream()
+                .map(c -> converter.convert(c, CategoryResponseDto.class))
+                .toList();
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

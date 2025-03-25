@@ -19,6 +19,10 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Size(max = 50)
+    private String name;
+
     public String getName() {
         return name;
     }
@@ -26,10 +30,6 @@ public class Category {
     public Long getId() {
         return id;
     }
-
-    @NotBlank
-    @Size(max = 50)
-    private String name;
 
     @Override
     public final boolean equals(Object o) {

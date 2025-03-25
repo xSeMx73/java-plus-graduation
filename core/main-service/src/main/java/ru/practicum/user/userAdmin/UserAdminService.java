@@ -4,6 +4,8 @@ import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,12 +13,12 @@ import org.springframework.stereotype.Service;
 import ru.practicum.exception.InternalServerException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.dto.UserDto;
-import ru.practicum.user.dto.UserMapper;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,11 +26,15 @@ import java.util.List;
 public class UserAdminService {
 
    private final UserRepository userRepository;
-   private final UserMapper userMapper;
+    @Qualifier("conversionService")
+    private final ConversionService converter;
 
     public UserDto createUser(UserDto userDto) {
         try {
-            userDto = userMapper.toUserDto(userRepository.save(userMapper.toUser(userDto)));
+            userDto = converter.convert(userRepository
+                    .save(Objects.requireNonNull(
+                            converter.convert(userDto, User.class))), UserDto.class);
+
             if (userDto.id() == null) {
                 throw new InternalServerException("Не удалось сохранить данные");
             }
@@ -47,7 +53,7 @@ public class UserAdminService {
           users = userRepository.findUsers(ids,pageable);
       }
     return users.stream()
-            .map(userMapper::toUserDto)
+            .map(u -> converter.convert(u, UserDto.class))
             .toList();
     }
 

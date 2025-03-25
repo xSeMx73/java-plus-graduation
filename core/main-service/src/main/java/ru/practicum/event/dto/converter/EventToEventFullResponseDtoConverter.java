@@ -1,13 +1,15 @@
 package ru.practicum.event.dto.converter;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-import ru.practicum.category.CategoryMapper;
+import ru.practicum.category.dto.CategoryResponseDto;
 import ru.practicum.event.dto.EventFullResponseDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
-import ru.practicum.user.dto.UserMapper;
+import ru.practicum.user.dto.UserShortDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,8 +18,8 @@ import java.util.stream.Collectors;
 @Component
 public class EventToEventFullResponseDtoConverter implements Converter<Event, EventFullResponseDto> {
 
-    private final CategoryMapper categoryMapper;
-    private final UserMapper userMapper;
+    @Qualifier("conversionService")
+    private final ConversionService converter;
 
     @Override
     public EventFullResponseDto convert(Event source) {
@@ -33,8 +35,8 @@ public class EventToEventFullResponseDtoConverter implements Converter<Event, Ev
                 .state(source.getState())
                 .participantLimit(source.getParticipantLimit())
                 .location(new Location(source.getLocation().getLat(), source.getLocation().getLon()))
-                .category(categoryMapper.toCategoryDto(source.getCategory()))
-                .initiator(userMapper.toUserShortDto(source.getInitiator()))
+                .category(converter.convert(source.getCategory(), CategoryResponseDto.class))
+                .initiator(converter.convert(source.getInitiator(), UserShortDto.class))
                 .requestModeration(source.getRequestModeration())
                 .views((source.getViews() == null) ? 0L : source.getViews())
                 .build();

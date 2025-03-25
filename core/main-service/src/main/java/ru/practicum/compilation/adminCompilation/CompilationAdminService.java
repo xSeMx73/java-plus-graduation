@@ -26,7 +26,7 @@ public class CompilationAdminService  {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    @Qualifier("mvcConversionService")
+    @Qualifier("conversionService")
     private final ConversionService converter;
 
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {

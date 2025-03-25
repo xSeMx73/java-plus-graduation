@@ -21,10 +21,6 @@ import ru.practicum.category.dto.CategoryUpdateDto;
 @RequestMapping(path = "/admin/categories")
 public class AdminCategoryController {
 
-
-
-
-
     private final CategoryService categoryService;
 
     @PostMapping

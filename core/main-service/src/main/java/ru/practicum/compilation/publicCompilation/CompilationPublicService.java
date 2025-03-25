@@ -19,7 +19,8 @@ import java.util.List;
 public class CompilationPublicService {
 
    private final CompilationRepository compilationRepository;
-    @Qualifier("mvcConversionService")
+
+    @Qualifier("conversionService")
     private final ConversionService converter;
 
     public CompilationDto getCompilationById(Long compId) {

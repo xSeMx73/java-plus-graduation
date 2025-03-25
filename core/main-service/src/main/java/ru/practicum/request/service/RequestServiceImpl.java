@@ -2,6 +2,8 @@ package ru.practicum.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.event.EventRepository;
@@ -11,7 +13,6 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.NotPossibleException;
 import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.enums.RequestState;
-import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
@@ -27,7 +28,8 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository repository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final RequestMapper requestMapper;
+    @Qualifier("conversionService")
+    private final ConversionService converter;
 
     @Override
     public RequestDto create(long userId, long eventId) {
@@ -52,14 +54,14 @@ public class RequestServiceImpl implements RequestService {
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
         }
-        return requestMapper.toRequestDto(repository.save(newRequest));
+        return converter.convert(repository.save(newRequest), RequestDto.class);
     }
 
     @Override
     public List<RequestDto> getAllRequestByUserId(final long userId) {
         getUser(userId);
         return repository.findAllByRequesterId(userId).stream()
-                .map(requestMapper::toRequestDto)
+                .map(r -> converter.convert(r, RequestDto.class))
                 .toList();
     }
 
@@ -72,7 +74,7 @@ public class RequestServiceImpl implements RequestService {
         if (!request.getRequester().getId().equals(userId))
             throw new NotPossibleException("Request is not by user");
         request.setStatus(RequestState.CANCELED);
-        return requestMapper.toRequestDto(repository.save(request));
+        return converter.convert(repository.save(request), RequestDto.class);
     }
 
     private Event getEvent(long eventId) {

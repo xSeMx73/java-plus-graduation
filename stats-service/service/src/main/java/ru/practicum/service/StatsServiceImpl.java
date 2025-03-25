@@ -2,14 +2,17 @@ package ru.practicum.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
 import ru.practicum.StatDto;
 import ru.practicum.StatRequestDto;
-import ru.practicum.mapper.HitMapper;
+import ru.practicum.model.Hit;
 import ru.practicum.repository.StatsRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -17,11 +20,15 @@ public class StatsServiceImpl implements StatsService {
 
 
     private final StatsRepository statsRepository;
-   private final HitMapper hitMapper;
+
+
+    @Qualifier("conversionService")
+    private final ConversionService converter;
 
     @Override
     public HitDto hit(HitDto hitDto) {
-        return hitMapper.toHitDto(statsRepository.save(hitMapper.toHit(hitDto)));
+        return converter.convert(statsRepository.save(Objects.requireNonNull(
+                converter.convert(hitDto, Hit.class))),HitDto.class);
     }
 
     @Override
