@@ -3,9 +3,7 @@ package ru.practicum;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
@@ -18,68 +16,50 @@ import java.time.format.DateTimeFormatter;
 public class StatWebClient {
     private final WebClient webClient;
 
-    public String url;
 
-    public StatWebClient(@Value("http://localhost:9090") String url) {
-
-        this.url = url;
-        webClient = WebClient.create(url);
+    public StatWebClient(WebClient.Builder webClientBuilder, @Value("${stats.client.url}") String baseUrl) {
+        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     public HitDto addHit(HitDto hitDto) {
-
-
-        return webClient
-                .post()
+        log.info("Метод hit --> ");
+        return
+        webClient.post()
                 .uri("/hit")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(hitDto))
-                .exchangeToMono(clientResponse -> {
-                    if (clientResponse.statusCode().is5xxServerError()) {
-                        return Mono.error(new RuntimeException("Server Error"));
-                    } else if (clientResponse.statusCode().is4xxClientError()) {
-                        return Mono.error(new RuntimeException("Client Error"));
-                    } else {
-                        return clientResponse.bodyToMono(HitDto.class);
-                    }
-                })
+                .bodyValue(hitDto)
+                .retrieve()
+                .bodyToMono(HitDto.class)
                 .block();
     }
 
-    public Mono<StatDto> get(StatRequestDto statRequestDto) {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:9090/stats");
+       public Mono<StatDto> get(StatRequestDto statRequestDto) {
+           log.info("Метод get --> ");
+         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/stats");
+         uriBuilder.queryParam("start", statRequestDto.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+         uriBuilder.queryParam("end", statRequestDto.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+         if (statRequestDto.getUri() != null) {
+             for (String uri : statRequestDto.getUri()) {
+                 uriBuilder.queryParam("uris", uri);
+             }
+         }
+         uriBuilder.queryParam("unique", statRequestDto.getUnique());
+         return webClient
+                 .get()
+                 .uri(uriBuilder.build().toUri())
+                 .retrieve()
+                 .bodyToMono(StatDto.class);
 
-        uriBuilder.queryParam("start", statRequestDto.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        uriBuilder.queryParam("end", statRequestDto.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        if (statRequestDto.getUri() != null) {
-            for (String uri : statRequestDto.getUri()) {
-                uriBuilder.queryParam("uris", uri);
-            }
-        }
-        uriBuilder.queryParam("unique", statRequestDto.getUnique());
+     }
+
+    public Long getEventViews(String request) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/stats/event");
+        uriBuilder.queryParam("uri", request);
+        log.info("getEventViews uri --> {}", uriBuilder.toUriString());
         return webClient
                 .get()
                 .uri(uriBuilder.build().toUri())
                 .retrieve()
-                .bodyToMono(StatDto.class);
-
-    }
-
-    public Long getEventViews(String request) {
-      UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:9090/stats/event");
-                uriBuilder.queryParam("uri", request);
-        return webClient
-                .get()
-                .uri(uriBuilder.build().toUri())
-                .exchangeToMono(clientResponse -> {
-                    if (clientResponse.statusCode().is5xxServerError()) {
-                        return Mono.error(new RuntimeException("Server Error"));
-                    } else if (clientResponse.statusCode().is4xxClientError()) {
-                        return Mono.error(new RuntimeException("Client Error"));
-                    } else {
-                        return clientResponse.bodyToMono(Long.class);
-                    }
-                })
+                .bodyToMono(Long.class)
                 .block();
     }
 

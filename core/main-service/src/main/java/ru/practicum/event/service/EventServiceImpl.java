@@ -121,7 +121,7 @@ public class EventServiceImpl implements EventService {
                 PageRequest.of(from,
                         size)
         );
-
+log.info("Метод publicGetEvents вебклиент: {}", statisticService.toString());
         hit(request.getRemoteAddr(), request.getRequestURI());
 
         return listConverter.convertList(events);
@@ -134,6 +134,7 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Событие c ID: " + id + " не найдено");
         }
+        log.info("Метод publicGetEvent вебклиент: {}", statisticService.toString());
         hit(request.getRemoteAddr(),request.getRequestURI());
 
 
