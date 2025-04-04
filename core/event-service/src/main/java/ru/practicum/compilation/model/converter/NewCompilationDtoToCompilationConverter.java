@@ -4,8 +4,8 @@ package ru.practicum.compilation.model.converter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-import ru.practicum.dto.event.compilation.NewCompilationDto;
 import ru.practicum.compilation.model.Compilation;
+import ru.practicum.dto.event.compilation.NewCompilationDto;
 
 @RequiredArgsConstructor
 @Component

@@ -11,10 +11,7 @@ spring:
     init:
       mode: always
   datasource:
-    driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://user-db:5432/user
-    username: root
-    password: root
-
-stat-server:
-  uri: http://stats-server:9090
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: admin

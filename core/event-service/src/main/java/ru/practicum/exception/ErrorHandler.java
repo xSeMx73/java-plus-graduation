@@ -34,6 +34,14 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleParameterConflict(final ConflictException e) {
+        log.info("Received status 409 Conflict {}", e.getMessage(), e);
+
+        return new ErrorResponse("Некорректное значение параметра ");
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleParameterNotValid(final ParameterNotValidException e) {
         log.trace("Получен статус 400 Bad request {}", e.getMessage(), e);

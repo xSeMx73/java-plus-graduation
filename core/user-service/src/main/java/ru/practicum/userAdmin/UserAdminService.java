@@ -10,9 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.dto.user.UserDto;
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.exception.InternalServerException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.user.dto.UserDto;
 import ru.practicum.model.User;
 import ru.practicum.repository.UserRepository;
 
@@ -35,7 +36,7 @@ public class UserAdminService {
                     .save(Objects.requireNonNull(
                             converter.convert(userDto, User.class))), UserDto.class);
 
-            if (userDto.id() == null) {
+            if (Objects.requireNonNull(userDto).id() == null) {
                 throw new InternalServerException("Не удалось сохранить данные");
             }
         return userDto;
@@ -65,5 +66,13 @@ public class UserAdminService {
 
     public User getUser(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователя не существует"));
+    }
+
+    public List<UserShortDto> findShortUsers(List<Long> ids) {
+        List<User> users = userRepository.findAllByIds(ids);
+        log.info("Search for users with ids {} completed", ids);
+        return users.stream()
+                .map(u -> converter.convert(u, UserShortDto.class))
+                .toList();
     }
 }

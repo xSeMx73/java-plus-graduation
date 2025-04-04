@@ -1,7 +1,7 @@
 package ru.practicum.service;
 
-import ru.practicum.event.dto.EventShortResponseDto;
-import ru.practicum.subscription.dto.SubscriptionDto;
+import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.subscription.SubscriptionDto;
 import ru.practicum.model.BlackList;
 import ru.practicum.model.Subscriber;
 
@@ -18,7 +18,7 @@ public interface SubscriptionService {
 
     SubscriptionDto getBlacklists(long userId);
 
-    List<EventShortResponseDto> getEvents(long userId);
+    List<EventFullResponseDto> getEvents(long userId);
 
     void removeFromBlackList(long userId, long blackListId);
 }

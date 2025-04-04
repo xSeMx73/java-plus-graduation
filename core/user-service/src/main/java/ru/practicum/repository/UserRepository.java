@@ -18,4 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query(value = "select * from users as u where u.id in (:ids) or (:ids) is null",nativeQuery = true)
     Page<User> findUsers(@Param("ids") List<Long> ids, Pageable pageable);
+
+    @Query(value = "select * from users as u where u.id in (:ids) or (:ids) is null",nativeQuery = true)
+    List<User> findAllByIds(List<Long> ids);
 }

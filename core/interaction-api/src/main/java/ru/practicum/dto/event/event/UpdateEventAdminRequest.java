@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import ru.practicum.event.enums.AdminAction;
-import ru.practicum.event.model.Location;
-import ru.practicum.event.validation.ValidEventDate;
+import ru.practicum.dto.event.event.validation.ValidEventDate;
 
 import java.time.LocalDateTime;
 

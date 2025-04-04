@@ -10,26 +10,24 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.HitDto;
-import ru.practicum.StatWebClient;
 import ru.practicum.category.CategoryRepository;
 import ru.practicum.category.model.Category;
 import ru.practicum.dto.event.event.*;
+import ru.practicum.dto.request.RequestDto;
+import ru.practicum.dto.request.RequestState;
+import ru.practicum.dto.stat.HitDto;
 import ru.practicum.event.EventRepository;
-import ru.practicum.event.model.converter.EventToEventFullResponseDtoConverter;
-import ru.practicum.event.enums.EventState;
-import ru.practicum.event.enums.StateAction;
 import ru.practicum.event.model.Event;
-import ru.practicum.request.dto.RequestDto;
-import ru.practicum.request.enums.RequestState;
-import ru.practicum.request.model.Request;
-import ru.practicum.request.repository.RequestRepository;
-import ru.practicum.user.model.User;
-import ru.practicum.user.repository.UserRepository;
+import ru.practicum.event.model.converter.EventToEventFullResponseDtoConverter;
+import ru.practicum.exception.*;
+import ru.practicum.feign.RequestFeignClient;
+import ru.practicum.feign.StatFeignClient;
+import ru.practicum.feign.UserFeignClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +37,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository repository;
-    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
     @Qualifier("conversionService")
@@ -47,21 +44,22 @@ public class EventServiceImpl implements EventService {
     private final EventToEventFullResponseDtoConverter listConverter;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
-    private final StatWebClient statisticService;
-    private final RequestRepository requestRepository;
+    private final StatFeignClient statFeignClient;
+    private final RequestFeignClient requestFeignClient;
+    private final UserFeignClient userFeignClient;
 
     @Override
     public List<EventFullResponseDto> getEvents(Long userId, Integer from, Integer size) {
-        getUser(userId);
+        userFeignClient.findShortUsers(Collections.singletonList(userId));
         Pageable pageable = PageRequest.of(from, size);
-        List<Event> respEvent = repository.findByInitiatorId(userId, pageable);
+        List<Event> respEvent = repository.findByInitiator(userId, pageable);
         return listConverter.convertList(respEvent);
     }
 
     @Override
     public EventFullResponseDto getEventById(Long userId, Long id, String ip, String uri) {
-        getUser(userId);
-        Event event = repository.findByIdAndInitiatorId(id, userId).orElseThrow(() ->
+        userFeignClient.findShortUsers(Collections.singletonList(userId));
+        Event event = repository.findByIdAndInitiator(id, userId).orElseThrow(() ->
                 new NotFoundException(EVENT_NOT_FOUND_MESSAGE));
 
         return converter.convert(event, EventFullResponseDto.class);
@@ -69,11 +67,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullResponseDto createEvent(Long userId, NewEventDto eventDto) {
-        User user = getUser(userId);
+
         Category category = getCategory(eventDto.category());
         Event event = converter.convert(eventDto, Event.class);
         if (event == null) throw new NoResultException("Не удалось создать событие");
-        event.setInitiator(user);
+        event.setInitiator(userId);
         event.setCategory(category);
         event.setState(EventState.PENDING);
         event.setConfirmedRequests(0L);
@@ -85,7 +83,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullResponseDto updateEvent(Long userId, UpdateEventUserRequest eventDto, Long eventId) {
-        getUser(userId);
+        userFeignClient.findShortUsers(Collections.singletonList(userId));
         Optional<Event> eventOptional = repository.findById(eventId);
         if (eventOptional.isEmpty()) {
             throw new NotFoundException(EVENT_NOT_FOUND_MESSAGE);
@@ -120,7 +118,7 @@ public class EventServiceImpl implements EventService {
                 PageRequest.of(from,
                         size)
         );
-log.info("Метод publicGetEvents вебклиент: {}", statisticService.toString());
+log.info("Метод publicGetEvents вебклиент: {}", statFeignClient.toString());
         hit(request.getRemoteAddr(), request.getRequestURI());
 
         return listConverter.convertList(events);
@@ -133,11 +131,10 @@ log.info("Метод publicGetEvents вебклиент: {}", statisticService.t
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Событие c ID: " + id + " не найдено");
         }
-        log.info("Метод publicGetEvent вебклиент: {}", statisticService.toString());
         hit(request.getRemoteAddr(),request.getRequestURI());
 
 
-        Long views = statisticService.getEventViews(request.getRequestURI());
+        Long views = statFeignClient.getEventViews(request.getRequestURI());
         if (views != null) {
             event.setViews(views);
         }
@@ -147,68 +144,55 @@ log.info("Метод publicGetEvents вебклиент: {}", statisticService.t
 
     @Override
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
-        getUser(userId);
+        userFeignClient.findShortUsers(Collections.singletonList(userId));
         Event event = getEvent(eventId);
+        EventRequestStatusUpdateResult response = new EventRequestStatusUpdateResult();
+        List<RequestDto> requests = requestFeignClient.findRequests(request.getRequestIds());
+        if (request.getStatus().equals(RequestState.REJECTED)) {
+            checkRequestsStatus(requests);
+            requests.forEach(r -> r.setStatus(RequestState.REJECTED));
 
-        List<RequestDto> confirmedReqs = new ArrayList<>();
-        List<RequestDto> canceledReqs = new ArrayList<>();
 
-        for (Long requestId : request.getRequestIds()) {
-            Request newRequest = requestRepository
-              .findById(requestId).orElseThrow(() -> new NotFoundException("Запрос c ID: " + requestId + " не найден"));
-            processRequestStatus(request.getStatus(), event, newRequest, confirmedReqs, canceledReqs);
+
+            requestFeignClient.updateAllRequest(requests);
+            response.setRejectedRequests(requests);
+        } else {
+            if (requests.size() + event.getConfirmedRequests() > event.getParticipantLimit())
+                throw new ConflictException("Превышен лимит заявок");
+            requests.forEach(r -> r.setStatus(RequestState.CONFIRMED));
+            requestFeignClient.updateAllRequest(requests);
+            event.setConfirmedRequests(event.getConfirmedRequests() + requests.size());
+            repository.save(event);
+            response.setConfirmedRequests(requests);
         }
-
-        repository.save(event);
-        return new EventRequestStatusUpdateResult(confirmedReqs, canceledReqs);
+        return response;
     }
 
     @Override
     public List<RequestDto> getUserRequests(Long userId, Long eventId) {
-        userRepository.findById(userId);
-        Event event = repository.findById(eventId).orElse(new Event());
-        List<Request> requests = requestRepository.findAllByEvent(event);
+       List<RequestDto> requests = new ArrayList<>(requestFeignClient.get(eventId)) ;
         if (requests.isEmpty()) return new ArrayList<>();
         return requests.stream().map(r -> converter.convert(r, RequestDto.class)).collect(Collectors.toList());
     }
 
     @Override
-    public Event getEventByInitiator(Long userId) {
-        return repository.findByInitiatorId(userId);
+    public EventFullResponseDto getEventByInitiator(Long userId) {
+        return converter.convert(repository.findByInitiator(userId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено")), EventFullResponseDto.class);
     }
 
-    private void processRequestStatus(String status, Event event, Request request,
-                                      List<RequestDto> confirmedReqs,
-                                      List<RequestDto> canceledReqs) {
-        if (!request.getStatus().equals(RequestState.PENDING)) {
-            if (request.getStatus().equals(RequestState.CONFIRMED)) {
-                throw new NotPossibleException("Request already confirmed");
-            } else {
-                throw new BadRequestException("Request " + request.getId() + " is not pending");
-            }
-        } else {
-            if (status.equals("CONFIRMED")) {
-                confirmedStatus(event, request, confirmedReqs);
-            } else {
-                request.setStatus(RequestState.REJECTED);
-                canceledReqs.add(converter.convert(request, RequestDto.class));
-                requestRepository.save(request);
-            }
-        }
+    @Override
+    public EventRequestDto updateConfirmRequests(Long eventId, EventRequestDto eventDto) {
+        Event event = getEvent(eventId);
+        event.setConfirmedRequests(eventDto.getConfirmedRequests());
+        repository.save(event);
+        return converter.convert(event, EventRequestDto.class);
     }
 
-    private void confirmedStatus(Event event, Request request,
-                                       List<RequestDto> confirmedRequests) {
-        if (event.getConfirmedRequests() >= event.getParticipantLimit() && event.getParticipantLimit() != 0) {
-            request.setStatus(RequestState.CANCELED);
-            confirmedRequests.add(converter.convert(request, RequestDto.class));
-            requestRepository.save(request);
-            throw new NotPossibleException("The participant limit is reached");
-        }
-        request.setStatus(RequestState.CONFIRMED);
-        event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-        confirmedRequests.add(converter.convert(request, RequestDto.class));
-        requestRepository.save(request);
+    @Override
+    public EventRequestDto getEventById(long eventId) {
+        return converter.convert(repository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено")), EventRequestDto.class);
     }
 
     @Override
@@ -292,14 +276,6 @@ log.info("Метод publicGetEvents вебклиент: {}", statisticService.t
             throw new ConflictException("Дата начала события меньше чем час " + dateTime);
     }
 
-    private User getUser(Long userId) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new NotFoundException("Пользователь c ID: " + userId + " не найден");
-        }
-        return user.get();
-    }
-
     private Category getCategory(Long categoryId) {
         Optional<Category> category = categoryRepository.findById(categoryId);
         if (category.isEmpty()) {
@@ -361,6 +337,14 @@ log.info("Метод publicGetEvents вебклиент: {}", statisticService.t
         return foundEvent;
     }
 
+    private void checkRequestsStatus(List<RequestDto> requests) {
+        Optional<RequestDto> confirmedReq = requests.stream()
+                .filter(request -> request.getStatus().equals(RequestState.CONFIRMED))
+                .findFirst();
+        if (confirmedReq.isPresent())
+            throw new ConflictException("Нельзя отменить, уже принятую заявку.");
+    }
+
 
     private List<String> getListOfUri(List<Event> events, String uri) {
         return events.stream().map(Event::getId).map(id -> getUriForEvent(uri, id))
@@ -373,6 +357,6 @@ log.info("Метод publicGetEvents вебклиент: {}", statisticService.t
 
     private void hit(String ip, String uri) {
         HitDto hit = new HitDto("ewm-main", uri, ip, LocalDateTime.now());
-        statisticService.addHit(hit);
+        statFeignClient.hit(hit);
     }
 }

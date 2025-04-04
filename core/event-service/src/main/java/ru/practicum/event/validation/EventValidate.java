@@ -7,16 +7,19 @@ import ru.practicum.dto.event.event.UpdateEventUserRequest;
 import ru.practicum.exception.BadRequestException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 public class EventValidate {
+
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static void eventDateValidate(NewEventDto dto) {
         LocalDateTime dateTime = dto.eventDate();
         if (dateTime.isBefore(LocalDateTime.now().plusHours(2))) {
             String messageError = "Событие должно начинаться не раньше чем через 2 часа.";
             log.error(messageError);
-            throw new ValidationException(messageError);
+            throw new BadRequestException(messageError);
         }
     }
 

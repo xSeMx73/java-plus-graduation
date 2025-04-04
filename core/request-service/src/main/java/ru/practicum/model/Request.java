@@ -2,14 +2,11 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.proxy.HibernateProxy;
-import ru.practicum.event.model.Event;
-import ru.practicum.enums.RequestState;
-import ru.practicum.user.model.User;
+import ru.practicum.dto.request.RequestState;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -19,24 +16,24 @@ import java.util.Objects;
 @ToString
 @Getter
 @Setter
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @ToString.Exclude
-    Event event;
+    @Column(name = "event_id")
+    Long event;
 
     @CreationTimestamp
-    private LocalDateTime created;
+    LocalDateTime created;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @ToString.Exclude
-    private User requester;
+    @Column(name = "requester_id")
+    Long requester;
 
     @Enumerated(EnumType.STRING)
     @NotNull

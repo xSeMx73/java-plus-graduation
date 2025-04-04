@@ -1,12 +1,13 @@
 package ru.practicum.event.model;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.category.model.Category;
-import ru.practicum.event.enums.EventState;
-import ru.practicum.user.model.User;
+import ru.practicum.dto.event.event.EventState;
+import ru.practicum.dto.event.event.Location;
 
 import java.time.LocalDateTime;
 
@@ -21,8 +22,8 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    private User initiator;
+    @Column(name = "initiator_id", nullable = false)
+    private Long initiator;
 
     private String title;
 

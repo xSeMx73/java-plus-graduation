@@ -1,7 +1,6 @@
 package ru.practicum.dto.event.event;
 
 import lombok.Builder;
-import ru.practicum.event.enums.EventState;
 
 import java.util.List;
 

@@ -5,9 +5,9 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.event.dto.EventShortResponseDto;
+import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.subscription.SubscriptionDto;
 import ru.practicum.exception.ConditionsNotMetException;
-import ru.practicum.subscription.dto.SubscriptionDto;
 import ru.practicum.model.BlackList;
 import ru.practicum.model.Subscriber;
 import ru.practicum.service.SubscriptionService;
@@ -81,9 +81,9 @@ public class SubscriptionController {
     }
 
     @GetMapping("/subscriptions/events")
-    public List<EventShortResponseDto> getEventsSubscriptions(@PathVariable("userId") @Positive @NotNull long userId) {
+    public List<EventFullResponseDto> getEventsSubscriptions(@PathVariable("userId") @Positive @NotNull long userId) {
         log.info("GET Запрос на получение списка мероприятий пользователей на которых подписан человек с ID {} ", userId);
-        List<EventShortResponseDto> eventShortResponseDtos = subscriptionService.getEvents(userId);
+        List<EventFullResponseDto> eventShortResponseDtos = subscriptionService.getEvents(userId);
         log.info("GET Запрос на получение списка мероприятий выполнен {} ", eventShortResponseDtos);
         return eventShortResponseDtos;
     }

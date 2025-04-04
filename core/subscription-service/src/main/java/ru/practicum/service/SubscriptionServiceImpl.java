@@ -3,20 +3,18 @@ package ru.practicum.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.event.dto.EventShortResponseDto;
-import ru.practicum.event.dto.converter.EventToEventShortResponseDtoConverter;
-import ru.practicum.event.enums.EventState;
-import ru.practicum.event.service.EventService;
+import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.event.event.EventState;
+import ru.practicum.dto.subscription.SubscriptionDto;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.subscription.dto.SubscriptionDto;
+import ru.practicum.feign.EventFeignClient;
+import ru.practicum.feign.UserFeignClient;
 import ru.practicum.mapper.SubscriptionMapper;
 import ru.practicum.model.BlackList;
 import ru.practicum.model.Subscriber;
 import ru.practicum.repository.BlackListRepository;
 import ru.practicum.repository.SubscriberRepository;
-import ru.practicum.user.model.User;
-import ru.practicum.user.userAdmin.UserAdminService;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,26 +26,23 @@ import java.util.Optional;
 public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriberRepository subscriberRepository;
     private final BlackListRepository blackListRepository;
-    private final UserAdminService userService;
-    private final EventService eventService;
-    private final EventToEventShortResponseDtoConverter listConverter;
+    private final UserFeignClient userFeignClient;
+    private final EventFeignClient eventFeignClient;
     private final SubscriptionMapper subscriptionMapper;
 
     @Override
     public void addSubscriber(Subscriber subscriber) {
         log.debug("Проверка пользователя на существование в БД {}", subscriber.getUserId());
-        User userSibscriber = getUser(subscriber.getUserId(), subscriber.getSubscriber());
+        getUser(subscriber.getUserId(), subscriber.getSubscriber());
         checkUserBD(subscriber.getUserId(), subscriber.getSubscriber());
-        log.info("POST Запрос Сохранение пользователя в подписчиках {} {}", userSibscriber.getName(), userSibscriber.getEmail());
+        log.info("POST Запрос Сохранение пользователя в подписчиках {} {}", subscriber.getUserId(), subscriber.getSubscriber());
         subscriberRepository.save(subscriber);
     }
 
     @Override
     public void addBlacklist(BlackList blackList) {
-        log.debug("Проверка пользователей на существование в БД {}", blackList.getUserId());
-        User blockUser = getUser(blackList.getUserId(), blackList.getBlackList());
         checkUserBD(blackList.getUserId(), blackList.getBlackList());
-        log.info("POST Запрос Сохранение пользователя в черный список {} {}", blockUser.getName(), blockUser.getEmail());
+        log.info("POST Запрос Сохранение пользователя в черный список {} {}", blackList.getUserId(), blackList.getBlackList());
         blackListRepository.save(blackList);
     }
 
@@ -91,20 +86,20 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public List<EventShortResponseDto> getEvents(long userId) {
+    public List<EventFullResponseDto> getEvents(long userId) {
         return subscriberRepository.findAllByUserId(userId).stream()
                 .map(Subscriber::getSubscriber)
-                .map(eventService::getEventByInitiator)
+                .map(eventFeignClient::getByInitiator)
                 .filter(Objects::nonNull)
                 .filter(event -> event.getState().equals(EventState.PENDING)
                                  || event.getState().equals(EventState.PUBLISHED))
-                .map(listConverter::convert)
+
                 .toList();
     }
 
-    private User getUser(long userId, long subscriberId) {
-        userService.getUser(userId);
-        return userService.getUser(subscriberId);
+    private void getUser(long userId, long subscriberId) {
+        userFeignClient.validateUser(userId);
+        userFeignClient.validateUser(subscriberId);
     }
 
     private void checkUserBD(long userId, long subscriberId) {

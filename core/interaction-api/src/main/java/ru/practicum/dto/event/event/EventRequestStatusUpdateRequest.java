@@ -1,5 +1,8 @@
 package ru.practicum.dto.event.event;
 
+import lombok.*;
+import ru.practicum.dto.request.RequestState;
+
 import java.util.List;
 
 @NoArgsConstructor
@@ -11,5 +14,5 @@ public class EventRequestStatusUpdateRequest {
 
     private List<Long> requestIds;
 
-    private String status;
+    private RequestState status;;
 }

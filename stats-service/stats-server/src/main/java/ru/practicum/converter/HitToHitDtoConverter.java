@@ -2,7 +2,7 @@ package ru.practicum.converter;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-import ru.practicum.HitDto;
+import ru.practicum.dto.stat.HitDto;
 import ru.practicum.model.Hit;
 
 @Component

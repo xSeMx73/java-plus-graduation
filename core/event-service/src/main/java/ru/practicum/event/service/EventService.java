@@ -2,8 +2,7 @@ package ru.practicum.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.dto.event.event.*;
-import ru.practicum.event.model.Event;
-import ru.practicum.request.dto.RequestDto;
+import ru.practicum.dto.request.RequestDto;
 
 import java.util.List;
 
@@ -30,5 +29,9 @@ public interface EventService {
 
     List<RequestDto> getUserRequests(Long userId, Long eventId);
 
-    Event getEventByInitiator(Long userId);
+    EventFullResponseDto getEventByInitiator(Long userId);
+
+    EventRequestDto updateConfirmRequests(Long eventId, EventRequestDto event);
+
+    EventRequestDto getEventById(long eventId);
 }

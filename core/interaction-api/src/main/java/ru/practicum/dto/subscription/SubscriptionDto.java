@@ -1,7 +1,7 @@
 package ru.practicum.dto.subscription;
 
 import lombok.Data;
-import ru.practicum.user.dto.UserShortDto;
+import ru.practicum.dto.user.UserShortDto;
 
 import java.util.Set;
 

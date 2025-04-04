@@ -1,6 +1,7 @@
-package ru.practicum.event.model;
+package ru.practicum.dto.event.event;
 
 import jakarta.persistence.Embeddable;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)

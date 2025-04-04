@@ -3,7 +3,7 @@ package ru.practicum.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import ru.practicum.StatDto;
+import ru.practicum.dto.stat.StatDto;
 import ru.practicum.model.Hit;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface StatsRepository extends JpaRepository<Hit, Long> {
 
-    @Query(value = "SELECT new ru.practicum.StatDto(" +
+    @Query(value = "SELECT new ru.practicum.dto.stat.StatDto(" +
             "h.app, h.uri, count(DISTINCT h.ip)) " +
             "FROM Hit as h " +
             "WHERE h.timestamp BETWEEN ?1 AND ?2 " +
@@ -21,7 +21,7 @@ public interface StatsRepository extends JpaRepository<Hit, Long> {
             "ORDER BY count(DISTINCT h.ip) DESC")
     List<StatDto> getWithUniqueIpCount(LocalDateTime start, LocalDateTime end, List<String> uris);
 
-    @Query(value = "SELECT new ru.practicum.StatDto(" +
+    @Query(value = "SELECT new ru.practicum.dto.stat.StatDto(" +
             "h.app, h.uri, count(h.ip)) " +
             "FROM Hit as h " +
             "WHERE h.timestamp BETWEEN ?1 AND ?2 " +

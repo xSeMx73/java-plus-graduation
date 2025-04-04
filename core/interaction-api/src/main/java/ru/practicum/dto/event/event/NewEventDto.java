@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import ru.practicum.event.model.Location;
-import ru.practicum.event.validation.ValidEventDate;
 
 import java.time.LocalDateTime;
 
@@ -19,9 +17,7 @@ public record NewEventDto(
         @NotNull
         Long category,
 
-        @NotNull
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @ValidEventDate
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime eventDate,
 
         @NotNull

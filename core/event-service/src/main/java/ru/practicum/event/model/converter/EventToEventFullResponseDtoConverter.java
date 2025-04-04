@@ -5,10 +5,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 import ru.practicum.category.model.converter.CategoryToCategoryResponseDto;
 import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.event.event.Location;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.model.Location;
-import ru.practicum.user.model.converter.UserToUserShortDto;
+import ru.practicum.feign.UserFeignClient;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,7 @@ public class EventToEventFullResponseDtoConverter implements Converter<Event, Ev
 
 
     private final CategoryToCategoryResponseDto converterCategory;
-    private final UserToUserShortDto converterUser;
+    private final UserFeignClient userFeignClient;
 
 
     @Override
@@ -36,7 +37,7 @@ public class EventToEventFullResponseDtoConverter implements Converter<Event, Ev
                 .participantLimit(source.getParticipantLimit())
                 .location(new Location(source.getLocation().getLat(), source.getLocation().getLon()))
                 .category(converterCategory.convert(source.getCategory()))
-                .initiator(converterUser.convert(source.getInitiator()))
+                .initiator(userFeignClient.findShortUsers(Collections.singletonList(source.getInitiator())).getFirst())
                 .requestModeration(source.getRequestModeration())
                 .views((source.getViews() == null) ? 0L : source.getViews())
                 .build();

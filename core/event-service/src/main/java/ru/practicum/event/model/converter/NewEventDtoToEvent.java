@@ -7,10 +7,13 @@ import ru.practicum.dto.event.event.NewEventDto;
 import ru.practicum.event.model.Event;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @RequiredArgsConstructor
 @Component
 public class NewEventDtoToEvent implements Converter<NewEventDto, Event> {
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public Event convert(NewEventDto source) {

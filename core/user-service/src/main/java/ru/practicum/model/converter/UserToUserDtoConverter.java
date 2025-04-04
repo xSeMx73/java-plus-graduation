@@ -2,7 +2,7 @@ package ru.practicum.model.converter;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-import ru.practicum.user.dto.UserDto;
+import ru.practicum.dto.user.UserDto;
 import ru.practicum.model.User;
 
 @Component

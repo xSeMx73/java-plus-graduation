@@ -4,8 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.event.event.EventRequestDto;
 import ru.practicum.event.service.EventService;
+import ru.practicum.feign.EventFeignClient;
 
 import java.util.List;
 
@@ -14,7 +17,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/events")
-public class PublicEventController {
+public class PublicEventController implements EventFeignClient {
     private final EventService eventService;
 
     @GetMapping
@@ -38,5 +41,21 @@ public class PublicEventController {
                             HttpServletRequest request) {
         log.info("Запрос события с ID: {}", id);
         return eventService.publicGetEvent(id, request);
+    }
+
+    @Override
+    public EventFullResponseDto getByInitiator(long userId) {
+        return eventService.getEventByInitiator(userId);
+    }
+
+    @Override
+    public EventRequestDto getBy(long eventId) {
+        return eventService.getEventById(eventId);
+    }
+
+    @Override
+    public EventRequestDto updateConfirmRequests(Long eventId, EventRequestDto event) {
+        log.info("Обновление события с ID: {}", eventId);
+        return eventService.updateConfirmRequests(eventId, event);
     }
 }

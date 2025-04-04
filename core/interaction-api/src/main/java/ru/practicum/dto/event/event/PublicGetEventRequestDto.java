@@ -1,6 +1,6 @@
 package ru.practicum.dto.event.event;
 
-import ru.practicum.event.enums.EventSort;
+
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -6,11 +6,11 @@ import ru.practicum.dto.request.RequestDto;
 import ru.practicum.model.Request;
 
 @Component
-public class RequestToRequestDtoConverter implements Converter<Request, RequestDto> {
+public class RequestDtoToRequestConverter implements Converter<RequestDto, Request> {
 
     @Override
-    public RequestDto convert(Request source) {
-      return  RequestDto.builder()
+    public Request convert(RequestDto source) {
+        return  Request.builder()
                 .id(source.getId())
                 .requester(source.getRequester())
                 .event(source.getEvent())

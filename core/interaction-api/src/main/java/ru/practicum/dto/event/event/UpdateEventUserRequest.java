@@ -3,8 +3,6 @@ package ru.practicum.dto.event.event;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import ru.practicum.event.enums.StateAction;
-import ru.practicum.event.model.Location;
 
 import java.time.LocalDateTime;
 

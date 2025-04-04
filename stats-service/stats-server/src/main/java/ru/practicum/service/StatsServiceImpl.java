@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
-import ru.practicum.HitDto;
-import ru.practicum.StatDto;
-import ru.practicum.StatRequestDto;
+import ru.practicum.dto.stat.HitDto;
+import ru.practicum.dto.stat.StatDto;
+import ru.practicum.dto.stat.StatRequestDto;
 import ru.practicum.model.Hit;
 import ru.practicum.repository.StatsRepository;
 

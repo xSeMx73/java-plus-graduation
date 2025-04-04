@@ -1,19 +1,24 @@
 package ru.practicum.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.request.RequestDto;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-@FeignClient(name = "request-service", path = "/requests")
+
+@FeignClient(name = "request-service")
 public interface RequestFeignClient {
-    @GetMapping("/confirmed")
-    Map<Long, Long> getConfirmedRequestMap(@RequestParam List<Long> eventIds);
 
-    @GetMapping("/count/{eventId}/{requestStatus}")
-    Long countAllByEventIdAndStatusIs(@PathVariable Long eventId,
-                                      @PathVariable String requestStatus);
+    @GetMapping("request/findRequests")
+    List<RequestDto> findRequests(@RequestParam List<Long> ids);
+
+    @PostMapping("/request/all")
+    List<RequestDto> updateAllRequest(@RequestBody List<RequestDto> requestDtoList);
+
+    @GetMapping("/request/get/{eventId}")
+    Collection<RequestDto> get(@PathVariable final long eventId);
 }
+
+

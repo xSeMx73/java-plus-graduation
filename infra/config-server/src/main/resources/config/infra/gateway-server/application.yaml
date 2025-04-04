@@ -19,7 +19,7 @@ spring:
         - id: request-service
           uri: lb://request-service
           predicates:
-              - Path=/users/*/requests/**, /requests/**
+              - Path=/users/*/requests/**, /requests/**, /request/findRequests, /request/get/*
         - id: stats-server
           uri: lb://stats-server
           predicates:

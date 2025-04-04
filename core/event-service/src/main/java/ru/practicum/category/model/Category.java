@@ -1,13 +1,16 @@
 package ru.practicum.category.model;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
+@Getter
 @Entity
 @Table(name = "categories")
 @ToString
@@ -21,14 +24,6 @@ public class Category {
     @NotBlank
     @Size(max = 50)
     private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    public Long getId() {
-        return id;
-    }
 
     @Override
     public final boolean equals(Object o) {

@@ -6,10 +6,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.HitDto;
-import ru.practicum.StatDto;
-import ru.practicum.StatRequestDto;
+import ru.practicum.dto.stat.HitDto;
+import ru.practicum.dto.stat.StatDto;
+import ru.practicum.dto.stat.StatRequestDto;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.feign.StatFeignClient;
 import ru.practicum.service.StatsService;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
-public class StatController {
+public class StatController implements StatFeignClient {
 
     private final StatsService statsService;
 
@@ -31,8 +32,9 @@ public class StatController {
         return ResponseEntity.status(HttpStatus.CREATED).body(statsService.hit(hitDto));
     }
 
+
     @GetMapping("/stats")
-    public ResponseEntity<List<StatDto>> getStats(
+    public List<StatDto> getStats(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
@@ -42,7 +44,7 @@ public class StatController {
             throw new ValidationException("Неверные параметры запроса");
         }
         StatRequestDto dto = new StatRequestDto(uris, start, end, unique);
-        return ResponseEntity.ok().body(statsService.getStats(dto));
+        return ResponseEntity.ok().body(statsService.getStats(dto)).getBody();
     }
 
     @GetMapping("/stats/event")

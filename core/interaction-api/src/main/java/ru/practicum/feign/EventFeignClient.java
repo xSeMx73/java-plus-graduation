@@ -1,15 +1,23 @@
 package ru.practicum.feign;
 
-import ewm.interaction.dto.eventandadditional.event.EventFullDto;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import ru.practicum.dto.event.event.EventFullResponseDto;
+import ru.practicum.dto.event.event.EventRequestDto;
 
-@FeignClient(name = "event-and-additional-service", path = "/events/feign")
+
+@FeignClient(name = "event-service", path = "/events")
 public interface EventFeignClient {
-    @GetMapping("/{eventId}/{userId}")
-    EventFullDto getBy(@PathVariable long userId, @PathVariable long eventId);
+    @GetMapping("/user/{userId}")
+    EventFullResponseDto getByInitiator(@PathVariable long userId);
 
-    @GetMapping("/{eventId}")
-    EventFullDto getBy(@PathVariable long eventId);
+    @GetMapping("/{eventId}/get")
+    EventRequestDto getBy(@PathVariable long eventId);
+
+    @PostMapping("/event/{eventId}")
+    EventRequestDto updateConfirmRequests(@PathVariable Long eventId, @RequestBody EventRequestDto event);
 }
