@@ -27,7 +27,8 @@ public class Event {
 
     private String title;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
     private LocalDateTime eventDate;

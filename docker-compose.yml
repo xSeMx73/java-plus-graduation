@@ -119,6 +119,8 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      user-service:
+        condition: service_healthy
     networks:
       - ewm-net
     environment:

@@ -1,10 +1,17 @@
+CREATE TABLE IF NOT EXISTS categories
+(
+    id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    CONSTRAINT categories_name_ux2 UNIQUE (name)
+);
+
 CREATE TABLE IF NOT EXISTS events
 (
     id                 BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     initiator_id       BIGINT                      NOT NULL,
     title              VARCHAR(120)                NOT NULL,
     confirmed_requests BIGINT,
-    category_id        BIGINT                      NOT NULL,
+    category_id        BIGINT REFERENCES categories(id) NOT NULL,
     event_date         TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     lat                REAL,
     lon                REAL,
@@ -17,16 +24,11 @@ CREATE TABLE IF NOT EXISTS events
     published_on       TIMESTAMP WITHOUT TIME ZONE,
     state              VARCHAR(10)                 NOT NULL,
     views              BIGINT,
-    CONSTRAINT events_initiator_id_fk FOREIGN KEY (initiator_id) REFERENCES users (id),
+
     CONSTRAINT state_values CHECK (state IN ('PENDING', 'PUBLISHED', 'CANCELED'))
     );
 
-CREATE TABLE IF NOT EXISTS categories
-(
-    id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    CONSTRAINT categories_name_ux2 UNIQUE (name)
-    );
+
 
 CREATE TABLE IF NOT EXISTS compilations
 (
