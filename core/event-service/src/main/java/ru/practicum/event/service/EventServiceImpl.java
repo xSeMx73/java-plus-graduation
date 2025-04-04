@@ -170,7 +170,7 @@ log.info("Метод publicGetEvents вебклиент: {}", statFeignClient.to
 
     @Override
     public List<RequestDto> getUserRequests(Long userId, Long eventId) {
-       List<RequestDto> requests = new ArrayList<>(requestFeignClient.get(eventId)) ;
+       List<RequestDto> requests = new ArrayList<>(requestFeignClient.get(eventId));
         if (requests.isEmpty()) return new ArrayList<>();
         return requests.stream().map(r -> converter.convert(r, RequestDto.class)).collect(Collectors.toList());
     }
