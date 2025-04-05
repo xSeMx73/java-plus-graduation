@@ -97,7 +97,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     public List<RequestDto> updateAllRequests(List<RequestDto> requestDtoList) {
-        List<Request> list = new ArrayList<>();
+        List<Request> list = new ArrayList<>(requestDtoList.size());
         for (RequestDto r : requestDtoList) {
             list.add(converter.convert(r, Request.class));
         }
