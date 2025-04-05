@@ -1,9 +1,9 @@
 package ru.practicum.service;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.HitDto;
-import ru.practicum.StatDto;
-import ru.practicum.StatRequestDto;
+import ru.practicum.dto.stat.HitDto;
+import ru.practicum.dto.stat.StatDto;
+import ru.practicum.dto.stat.StatRequestDto;
 
 import java.util.List;
 
