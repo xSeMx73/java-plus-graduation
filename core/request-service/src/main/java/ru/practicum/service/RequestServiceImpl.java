@@ -20,7 +20,6 @@ import ru.practicum.repository.RequestRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -98,18 +97,10 @@ public class RequestServiceImpl implements RequestService {
     }
 
     public List<RequestDto> updateAllRequests(List<RequestDto> requestDtoList) {
-        List<RequestDto> list = new ArrayList<>(requestDtoList.size());
+        List<Request> list = new ArrayList<>();
         for (RequestDto r : requestDtoList) {
-            list.add(updateRequest(r));
+            list.add(converter.convert(r, Request.class));
         }
-        return list;
+        return repository.saveAll(list).stream().map(d -> converter.convert(d, RequestDto.class)).toList();
     }
-
-    public RequestDto updateRequest(RequestDto requestDto) {
-        Request request = converter.convert(requestDto, Request.class);
-        request = repository.save(Objects.requireNonNull(request));
-        return converter.convert(request, RequestDto.class);
-    }
-
-
 }
