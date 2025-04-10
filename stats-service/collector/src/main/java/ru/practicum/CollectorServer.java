@@ -45,7 +45,7 @@ public class CollectorServer extends UserActionControllerGrpc.UserActionControll
             case ACTION_VIEW -> ActionTypeAvro.VIEW;
             case ACTION_REGISTER -> ActionTypeAvro.REGISTER;
             case ACTION_LIKE -> ActionTypeAvro.LIKE;
-            default -> throw new IllegalArgumentException("Unknown action type: " + type);
+            default -> throw new IllegalArgumentException("Неизвестный тип: " + type);
         };
     }
 }
