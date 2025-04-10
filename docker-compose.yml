@@ -53,7 +53,7 @@ services:
       interval: 25s
       retries: 10
 
-  ewm-db:
+  subscription-db:
     image: postgres:16.1
     container_name: ewm-db
     networks:
@@ -61,7 +61,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=root
       - POSTGRES_USER=root
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=ewm_subscription
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
@@ -308,6 +308,25 @@ services:
       interval: 10s
       retries: 15
 
+  db-init:
+      image: postgres:16.1
+      container_name: db-init
+      networks:
+        - ewm-net
+      environment:
+        PGPASSWORD: root
+      entrypoint:
+        - bash
+        - -c
+        - |
+          set -e
+          psql -U root -h ewm-db -d postgres -v ON_ERROR_STOP=1 <<-EOSQL
+          create database ewm_user;
+          create database ewm_subscription;
+          create database ewm_event;
+          create database ewm_request;
+          create database ewm-analyzer;
+          EOSQL
 
 networks:
   ewm-net:
