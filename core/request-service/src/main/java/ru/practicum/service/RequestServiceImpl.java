@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.CollectorClient;
 import ru.practicum.dto.event.event.EventRequestDto;
 import ru.practicum.dto.event.event.EventState;
 import ru.practicum.dto.request.RequestDto;
@@ -28,6 +29,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository repository;
     private final UserFeignClient userFeignClient;
     private final EventFeignClient eventFeignClient;
+    private final CollectorClient collectorClient;
 
     @Qualifier("conversionService")
     private final ConversionService converter;
@@ -55,6 +57,7 @@ public class RequestServiceImpl implements RequestService {
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventFeignClient.updateConfirmRequests(eventId, event);
         }
+        collectorClient.sendEventRegistration(userId, eventId);
         return converter.convert(repository.save(newRequest), RequestDto.class);
     }
 
