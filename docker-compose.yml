@@ -33,7 +33,7 @@ services:
     build: core/subscription-service
     container_name: ewm-subscription-service
     depends_on:
-      ewm-db:
+      subscription-db:
         condition: service_healthy
       config-server:
         condition: service_healthy
