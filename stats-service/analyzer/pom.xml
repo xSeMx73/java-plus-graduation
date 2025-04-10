@@ -44,12 +44,12 @@
             <artifactId>spring-aspects</artifactId>
         </dependency>
         <dependency>
-            <groupId>ewm</groupId>
+            <groupId>ru.practicum</groupId>
             <artifactId>proto</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>ewm</groupId>
+            <groupId>ru.practicum</groupId>
             <artifactId>avro</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
