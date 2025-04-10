@@ -1,7 +1,7 @@
 package ru.practicum;
 
-import ewm.deserializer.EventSimilarityAvroDeserializer;
-import ewm.deserializer.UserActionsAvroDeserializer;
+import ru.practicum.deserializer.EventSimilarityAvroDeserializer;
+import ru.practicum.deserializer.UserActionsAvroDeserializer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -14,8 +14,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.MessageListener;
-import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
-import ru.practicum.ewm.stats.avro.UserActionAvro;
+import ru.practicum.stats.avro.EventSimilarityAvro;
+import ru.practicum.stats.avro.UserActionAvro;
 
 import java.util.Map;
 

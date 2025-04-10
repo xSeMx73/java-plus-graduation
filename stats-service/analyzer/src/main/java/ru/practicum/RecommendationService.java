@@ -4,7 +4,7 @@ package ru.practicum;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.ewm.stats.avro.Recommendations;
+import ru.practicum.stats.avro.Recommendations;
 import ru.practicum.model.EventSimilarity;
 import ru.practicum.model.UserActionHistory;
 import ru.practicum.repository.EventSimilarityRepository;

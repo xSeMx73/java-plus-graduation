@@ -3,9 +3,9 @@ package ru.practicum;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
-import ru.practicum.ewm.stats.avro.RecommendationsControllerGrpc;
+import ru.practicum.stats.avro.RecommendationsControllerGrpc;
 
-import static ru.practicum.ewm.stats.avro.Recommendations.*;
+import static ru.practicum.stats.avro.Recommendations.*;
 
 @GrpcService
 @RequiredArgsConstructor
