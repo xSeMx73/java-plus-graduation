@@ -1,6 +1,5 @@
 package ru.practicum.event.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.dto.event.event.*;
 import ru.practicum.dto.request.RequestDto;
 
@@ -21,9 +20,9 @@ public interface EventService {
 
     List<EventFullResponseDto> publicGetEvents(String text,List<Long> categories, Boolean paid, String rangeStart,
                                                String rangeEnd, Boolean onlyAvailable,String sort,Integer from,
-                                               Integer size, HttpServletRequest request);
+                                               Integer size);
 
-    EventFullResponseDto publicGetEvent(Long eventId, HttpServletRequest request);
+    EventFullResponseDto publicGetEvent(Long eventId, Long userId);
 
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 
@@ -34,4 +33,8 @@ public interface EventService {
     EventRequestDto updateConfirmRequests(Long eventId, EventRequestDto event);
 
     EventRequestDto getEventById(long eventId);
+
+    List<EventFullResponseDto> getRecommendations(long userId, int maxResults);
+
+    void likeEvent(Long eventId, long userId);
 }

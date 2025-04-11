@@ -1,6 +1,5 @@
 package ru.practicum.event.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -29,18 +28,16 @@ public class PublicEventController implements EventFeignClient {
                                                       @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                       @RequestParam(required = false, defaultValue = "VIEWS") String sort,
                                                       @RequestParam(defaultValue = "0") Integer from,
-                                                      @RequestParam(defaultValue = "10") Integer size,
-                                                      HttpServletRequest request) {
+                                                      @RequestParam(defaultValue = "10") Integer size) {
         log.info("Получить события, согласно условиям");
         return eventService.publicGetEvents(text, categories, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size, request);
+                onlyAvailable, sort, from, size);
     }
 
     @GetMapping("/{id}")
-    EventFullResponseDto publicGetEvent(@PathVariable Long id,
-                            HttpServletRequest request) {
+    EventFullResponseDto publicGetEvent(@RequestHeader("X-EWM-USER-ID") Long userId, @PathVariable Long id) {
         log.info("Запрос события с ID: {}", id);
-        return eventService.publicGetEvent(id, request);
+        return eventService.publicGetEvent(id, userId);
     }
 
     @Override
@@ -57,5 +54,15 @@ public class PublicEventController implements EventFeignClient {
     public EventRequestDto updateConfirmRequests(Long eventId, EventRequestDto event) {
         log.info("Обновление события с ID: {}", eventId);
         return eventService.updateConfirmRequests(eventId, event);
+    }
+
+    @GetMapping("/recommendations")
+    public List<EventFullResponseDto> getRecommendations(@RequestHeader("X-EWM-USER-ID") long userId, @RequestParam Integer maxResults) {
+        return eventService.getRecommendations(userId, maxResults);
+    }
+
+    @PutMapping("/{eventId}/like")
+    public void likeEvent(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") long userId) {
+        eventService.likeEvent(eventId, userId);
     }
 }

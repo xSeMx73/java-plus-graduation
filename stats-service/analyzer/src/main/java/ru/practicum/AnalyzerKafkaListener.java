@@ -1,0 +1,50 @@
+package ru.practicum;
+
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.practicum.stats.avro.EventSimilarityAvro;
+import ru.practicum.stats.avro.UserActionAvro;
+import ru.practicum.model.EventSimilarity;
+import ru.practicum.model.UserActionHistory;
+import ru.practicum.model.UserActionType;
+import ru.practicum.repository.EventSimilarityRepository;
+import ru.practicum.repository.UserActionHistoryRepository;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AnalyzerKafkaListener {
+    private final UserActionHistoryRepository userActionHistoryRepository;
+    private final EventSimilarityRepository eventSimilarityRepository;
+
+    public void userActionReceived(UserActionAvro userActionAvro) {
+        log.info("Received UserActionAvro: {}", userActionAvro);
+        LocalDateTime localDateTime = Instant.ofEpochMilli(userActionAvro.getTimestamp()).atZone(ZoneId.of("UTC")).toLocalDateTime();
+        UserActionType actionType = UserActionType.valueOf(userActionAvro.getActionType().name());
+        UserActionHistory userActionHistory = UserActionHistory.builder()
+                .userId(userActionAvro.getUserId())
+                .eventId(userActionAvro.getEventId())
+                .actionType(actionType)
+                .timestamp(localDateTime)
+                .build();
+        userActionHistoryRepository.save(userActionHistory);
+    }
+
+    public void eventsSimilarityReceived(EventSimilarityAvro eventSimilarityAvro) {
+        log.info("Received EventSimilarityAvro: {}", eventSimilarityAvro);
+        LocalDateTime localDateTime = Instant.ofEpochMilli(eventSimilarityAvro.getTimestamp()).atZone(ZoneId.of("UTC")).toLocalDateTime();
+        EventSimilarity eventSimilarity = EventSimilarity.builder()
+                .eventA(eventSimilarityAvro.getEventA())
+                .eventB(eventSimilarityAvro.getEventB())
+                .score(eventSimilarityAvro.getScore())
+                .timestamp(localDateTime)
+                .build();
+        eventSimilarityRepository.save(eventSimilarity);
+    }
+}

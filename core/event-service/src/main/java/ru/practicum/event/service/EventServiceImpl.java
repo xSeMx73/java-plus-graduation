@@ -1,7 +1,6 @@
 package ru.practicum.event.service;
 
 import jakarta.persistence.NoResultException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,18 +9,18 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.AnalyzerClient;
+import ru.practicum.CollectorClient;
 import ru.practicum.category.CategoryRepository;
 import ru.practicum.category.model.Category;
 import ru.practicum.dto.event.event.*;
 import ru.practicum.dto.request.RequestDto;
 import ru.practicum.dto.request.RequestState;
-import ru.practicum.dto.stat.HitDto;
 import ru.practicum.event.EventRepository;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.converter.EventToEventFullResponseDtoConverter;
 import ru.practicum.exception.*;
 import ru.practicum.feign.RequestFeignClient;
-import ru.practicum.feign.StatFeignClient;
 import ru.practicum.feign.UserFeignClient;
 
 import java.time.LocalDateTime;
@@ -44,9 +43,12 @@ public class EventServiceImpl implements EventService {
     private final EventToEventFullResponseDtoConverter listConverter;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String EVENT_NOT_FOUND_MESSAGE = "Event not found";
-    private final StatFeignClient statFeignClient;
     private final RequestFeignClient requestFeignClient;
     private final UserFeignClient userFeignClient;
+
+    private final CollectorClient collectorClient;
+    private final AnalyzerClient analyzerClient;
+
 
     @Override
     public List<EventFullResponseDto> getEvents(Long userId, Integer from, Integer size) {
@@ -61,7 +63,7 @@ public class EventServiceImpl implements EventService {
         userFeignClient.findShortUsers(Collections.singletonList(userId));
         Event event = repository.findByIdAndInitiator(id, userId).orElseThrow(() ->
                 new NotFoundException(EVENT_NOT_FOUND_MESSAGE));
-
+        collectorClient.sendEventView(userId, event.getId());
         return converter.convert(event, EventFullResponseDto.class);
     }
 
@@ -99,7 +101,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullResponseDto> publicGetEvents(String text,List<Long> categories, Boolean paid, String rangeStart,
                                                       String rangeEnd, Boolean onlyAvailable,String sort,Integer from,
-                                                      Integer size, HttpServletRequest request) {
+                                                      Integer size) {
 
         LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, FORMATTER) : null;
         LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, FORMATTER) : null;
@@ -118,26 +120,18 @@ public class EventServiceImpl implements EventService {
                 PageRequest.of(from,
                         size)
         );
-log.info("Метод publicGetEvents вебклиент: {}", statFeignClient.toString());
-        hit(request.getRemoteAddr(), request.getRequestURI());
 
         return listConverter.convertList(events);
     }
 
     @Override
-    public EventFullResponseDto publicGetEvent(Long id, HttpServletRequest request) {
+    public EventFullResponseDto publicGetEvent(Long id,Long userId) {
         Event event = getEvent(id);
 
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Событие c ID: " + id + " не найдено");
         }
-        hit(request.getRemoteAddr(),request.getRequestURI());
-
-
-        Long views = statFeignClient.getEventViews(request.getRequestURI());
-        if (views != null) {
-            event.setViews(views);
-        }
+        collectorClient.sendEventView(userId, event.getId());
         event = repository.save(event);
         return converter.convert(event, EventFullResponseDto.class);
     }
@@ -193,6 +187,22 @@ log.info("Метод publicGetEvents вебклиент: {}", statFeignClient.to
     public EventRequestDto getEventById(long eventId) {
         return converter.convert(repository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено")), EventRequestDto.class);
+    }
+
+    @Override
+    public List<EventFullResponseDto> getRecommendations(long userId, int maxResults) {
+        return analyzerClient.getRecommendations(userId, maxResults).stream()
+                .sorted((a, b) -> (int) (a.getScore() - b.getScore()))
+                .map((r) -> {
+                    Event event = getEvent(r.getEventId());
+                    return converter.convert(event, EventFullResponseDto.class);
+                }).toList();
+    }
+
+    @Override
+    public void likeEvent(Long eventId, long userId) {
+        getEvent(eventId);
+        collectorClient.sendEventLike(userId, eventId);
     }
 
     @Override
@@ -355,8 +365,5 @@ log.info("Метод publicGetEvents вебклиент: {}", statFeignClient.to
         return uri + "/" + eventId;
     }
 
-    private void hit(String ip, String uri) {
-        HitDto hit = new HitDto("ewm-main", uri, ip, LocalDateTime.now());
-        statFeignClient.hit(hit);
-    }
+
 }
